@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Demo;
+package demo;
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
