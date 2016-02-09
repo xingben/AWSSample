@@ -3,30 +3,28 @@
  */
 package demo;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.securitytoken.model.Credentials;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import data.DVAAlert;
@@ -113,6 +111,14 @@ public class S3Demo {
 			s3client.putObject(request.withCannedAcl(CannedAccessControlList.PublicRead));
 			
 			
+			S3Object object = s3client.getObject(
+	                  new GetObjectRequest(bucketName, "testalert"));
+			InputStream objectData = object.getObjectContent();
+			
+			System.out.println(read(objectData));
+			// Process the objectData stream.
+			objectData.close();
+			
 		} catch (AmazonServiceException ase) {
             System.out.println("Caught an AmazonServiceException, which means your request made it "
                     + "to Amazon S3, but was rejected with an error response for some reason.");
@@ -128,10 +134,14 @@ public class S3Demo {
             System.out.println("Error Message: " + ace.getMessage());
         } catch (Exception ex) {
         	System.out.println(ex);
-        }
-
-		
+        }		
 		
 	}
+	
+	public static String read(InputStream input) throws IOException {
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(input))) {
+            return buffer.lines().collect(Collectors.joining("\n"));
+        }
+    }	
 
 }
